@@ -74,10 +74,12 @@
 
             #grid line {
               stroke: #fff;
+              stroke-width: 1.5;
             }
 
             #grid .minor line {
               stroke-opacity: .4;
+              stroke: #fff;
             }
 
             #grid text {
@@ -162,6 +164,12 @@
                         .y(function(d){return y(d.y);})
                         .curve(d3.curveBasis);
 
+        svg.selectAll("ticks")
+            .classed("minor", false);
+
+        svg.selectAll(".minorTick")
+            .classed("minorTick", false);
+
         svg.transition()
             .select(".lineXAxis")
             .call(d3.axisBottom(x));
@@ -170,17 +178,9 @@
             .select(".lineYAxis")
             .call(d3.axisLeft(y));
 
-        svg.select(".lineChart")
-            .transition()
-            .attr("d", line(data));
-
-        svg.selectAll("ticks")
-            .classed("minor", false);
-
-        svg.selectAll(".minorTick")
-            .classed("minorTick", false);
-
         var xTickNum = svg.select(".lineXAxis").selectAll(".tick").size();
+
+        svg.select(".xGrid").selectAll(".tick").remove();
 
         svg.transition()
             .select(".xGrid")
@@ -188,7 +188,8 @@
 
         svg.select(".xGrid")
             .selectAll(".tick")
-            .classed("minor", function(d, i) {return (i % 2 !== 0) ? true : false;});
+            .filter(function(d, i) {return (i % 2 !== 0);})
+            .classed("minor", true);  
 
         svg.select(".lineXAxis")
             .selectAll("text")
@@ -202,19 +203,17 @@
 
         var yTickNum = svg.select(".lineYAxis").selectAll(".tick").size();
 
+        svg.select(".yGrid").selectAll(".tick").remove();
+
         svg.transition()
             .select(".yGrid")
             .call(d3.axisLeft(y).ticks(yTickNum).tickSizeInner(-lineWidth));
 
         svg.select(".yGrid")
             .selectAll(".tick")
-            .data(y.ticks(Math.round(yTickNum / 2) - 1), function(d){return d;})
-            .exit()
+            .sort()
+            .filter(function(d, i) {return (i % 2 !== 0);})
             .classed("minor", true);
-
-        svg.transition()
-            .select(".scatterYAxis")
-            .call(d3.axisLeft(y).ticks(Math.round(yTickNum / 2) - 1));
 
         svg.select(".lineYAxis")
             .selectAll("text")
@@ -226,11 +225,18 @@
             .filter(function(d, i) {return (i % 2 !== 0);})
             .classed("minorTick", true);
 
+        svg.select(".lineChart")
+            .transition()
+            .attr("d", line(data));
+
     }
 
     function makeScatterPlot(svg, data, x, y, colorScale, opacityScale){
 
-        x.domain([0, d3.max(data, function(d){return d.x;})]);
+        var dataExtentX = d3.extent(data, function(d){return d.x;});
+        var dataRangeX = dataExtentX[1] - dataExtentX[0];
+
+        x.domain([0, (d3.max(data, function(d){return d.x;}) + Math.round(0.10 * dataRangeX))]);
         y.domain([0, d3.max(data, function(d){return d.y;})]);
 
         colorScale.domain([0, d3.max(data, function(d){return d.x;})]);
@@ -297,21 +303,25 @@
 
         var xTickNum = svg.select(".scatterXAxis").selectAll(".tick").size();
 
+        svg.select(".xGrid").selectAll(".tick").remove();
+
         svg.transition()
             .select(".xGrid")
             .call(d3.axisBottom(x).ticks(xTickNum).tickSizeInner(-scatterHeight));
 
         svg.select(".xGrid")
             .selectAll(".tick")
-            .data(x.ticks(Math.round(xTickNum / 2) - 1), function(d){return d;})
+            .data(x.ticks(Math.floor(xTickNum / 2)), function(d){return d;})
             .exit()
             .classed("minor", true);
 
         svg.transition()
             .select(".scatterXAxis")
-            .call(d3.axisBottom(x).ticks(Math.round(xTickNum / 2) - 1));
+            .call(d3.axisBottom(x).ticks(Math.floor(xTickNum / 2)));
 
         var yTickNum = svg.select(".scatterYAxis").selectAll(".tick").size();
+
+        svg.select(".yGrid").selectAll(".tick").remove();
 
         svg.transition()
             .select(".yGrid")
@@ -319,13 +329,13 @@
 
         svg.select(".yGrid")
             .selectAll(".tick")
-            .data(y.ticks(Math.round(yTickNum / 2) - 1), function(d){return d;})
+            .data(y.ticks(Math.floor(yTickNum / 2)), function(d){return d;})
             .exit()
             .classed("minor", true);
 
         svg.transition()
             .select(".scatterYAxis")
-            .call(d3.axisLeft(y).ticks(Math.round(yTickNum / 2) - 1));
+            .call(d3.axisLeft(y).ticks(Math.floor(yTickNum / 2)));
 
 
     }
@@ -385,14 +395,6 @@
             .attr("class", "lineGroup")
             .data([data])
             .attr("class", "lineChart");
-
-    var data2 = updateData();
-
-    lineSvg.append("path")
-            .attr("class", "lineGroup")
-            .data([data2])
-            .attr("class", "lineChart2");
-
 
     makeLinePlot(lineSvg, data, lineX, lineY, lineColorScale, lineOpacityScale);
     
