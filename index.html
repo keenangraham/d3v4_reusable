@@ -154,6 +154,47 @@
 
     }
 
+    function makeGridLines(opt){
+
+        var svg = opt.svg;
+        var chartAxis = opt.chartAxis;
+        var grid = opt.grid;
+        var axis = opt.axis;
+        var chartSize = opt.chartSize;
+        var horizontal = opt.horizontal;
+
+        if (horizontal){
+            var axisSelection = d3.axisLeft(axis);
+        } else {
+            var axisSelection = d3.axisBottom(axis);
+        }
+
+        var tickNum = svg.select(chartAxis).selectAll(".tick").size();
+
+        svg.select(grid).selectAll(".tick").remove();
+
+        svg.transition()
+            .select(grid)
+            .call(axisSelection.ticks(tickNum).tickSizeInner(-chartSize));
+
+        svg.select(grid)
+            .selectAll(".tick")
+            .sort()
+            .filter(function(d, i) {return (i % 2 !== 0);})
+            .classed("minor", true);
+
+        svg.select(chartAxis)
+            .selectAll("text")
+            .filter(function(d, i) {return (i % 2 !== 0);})
+            .classed("minorTick", true);
+
+        svg.select(chartAxis)
+            .selectAll("line")
+            .filter(function(d, i) {return (i % 2 !== 0);})
+            .classed("minorTick", true);
+
+    }
+
     function makeLinePlot(svg, data, x, y, colorScale, opacityScale){
 
         x.domain(d3.range(data.length));
@@ -178,52 +219,23 @@
             .select(".lineYAxis")
             .call(d3.axisLeft(y));
 
-        var xTickNum = svg.select(".lineXAxis").selectAll(".tick").size();
+        makeGridLines({
+            "svg": svg,
+            "chartAxis": ".lineXAxis",
+            "grid": ".xGrid",
+            "axis": x,
+            "chartSize": lineHeight,
+            "horizontal": false
+        });
 
-        svg.select(".xGrid").selectAll(".tick").remove();
-
-        svg.transition()
-            .select(".xGrid")
-            .call(d3.axisBottom(x).ticks(xTickNum).tickSizeInner(-lineHeight));
-
-        svg.select(".xGrid")
-            .selectAll(".tick")
-            .filter(function(d, i) {return (i % 2 !== 0);})
-            .classed("minor", true);  
-
-        svg.select(".lineXAxis")
-            .selectAll("text")
-            .filter(function(d, i) {return (i % 2 !== 0);})
-            .classed("minorTick", true);
-
-        svg.select(".lineXAxis")
-            .selectAll("line")
-            .filter(function(d, i) {return (i % 2 !== 0);})
-            .classed("minorTick", true);
-
-        var yTickNum = svg.select(".lineYAxis").selectAll(".tick").size();
-
-        svg.select(".yGrid").selectAll(".tick").remove();
-
-        svg.transition()
-            .select(".yGrid")
-            .call(d3.axisLeft(y).ticks(yTickNum).tickSizeInner(-lineWidth));
-
-        svg.select(".yGrid")
-            .selectAll(".tick")
-            .sort()
-            .filter(function(d, i) {return (i % 2 !== 0);})
-            .classed("minor", true);
-
-        svg.select(".lineYAxis")
-            .selectAll("text")
-            .filter(function(d, i) {return (i % 2 !== 0);})
-            .classed("minorTick", true);
-
-        svg.select(".lineYAxis")
-            .selectAll("line")
-            .filter(function(d, i) {return (i % 2 !== 0);})
-            .classed("minorTick", true);
+        makeGridLines({
+            "svg": svg,
+            "chartAxis": ".lineYAxis",
+            "grid": ".yGrid",
+            "axis": y,
+            "chartSize": lineWidth,
+            "horizontal": true
+        });
 
         svg.select(".lineChart")
             .transition()
@@ -319,24 +331,14 @@
             .select(".scatterXAxis")
             .call(d3.axisBottom(x).ticks(Math.floor(xTickNum / 2)));
 
-        var yTickNum = svg.select(".scatterYAxis").selectAll(".tick").size();
-
-        svg.select(".yGrid").selectAll(".tick").remove();
-
-        svg.transition()
-            .select(".yGrid")
-            .call(d3.axisLeft(y).ticks(yTickNum).tickSizeInner(-scatterWidth));
-
-        svg.select(".yGrid")
-            .selectAll(".tick")
-            .data(y.ticks(Math.floor(yTickNum / 2)), function(d){return d;})
-            .exit()
-            .classed("minor", true);
-
-        svg.transition()
-            .select(".scatterYAxis")
-            .call(d3.axisLeft(y).ticks(Math.floor(yTickNum / 2)));
-
+        makeGridLines({
+            "svg": svg,
+            "chartAxis": ".scatterYAxis",
+            "grid": ".yGrid",
+            "axis": y,
+            "chartSize": scatterWidth,
+            "horizontal": true
+        });
 
     }
 
