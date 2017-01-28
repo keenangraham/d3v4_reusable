@@ -129,9 +129,15 @@
                 </section>
             </div>
         </div>
+        <svg width="700" height="200">
+            <g transform="translate(70, 45)">
+                <path style="fill: none; stroke: black; stroke-opacity: 0.99; stroke-width: 2.5; stroke-dasharray: 0; shape-rendering: crispEdges;" d="m 0,0 5,0 0,50 -5,0" transform="rotate(-270)">
+                </path>
+            </g>
+        </svg>
     -->
         <div id="graphic">
-            <div style="width:700px; margin:0 auto;"> 
+            <div style="width:700px; margin:0 auto;">
                 <button type="button" class="btn btn-default btn-lg" style="float: right;" id="updatePlot">
                     Update
                 </button>
@@ -153,7 +159,7 @@
 
     function updateData(){
 
-        return d3.range(Math.round(Math.random() * 50)).map(generateData);
+        return d3.range(Math.round(Math.random() * 50) + 1).map(generateData);
 
     }
 
@@ -253,7 +259,6 @@
                 .filter(function(d, i) {return d3.select(this).attr("class") !== "noShow";})
                 .filter(function(d, i) {return (i % 2 !== 0);})
                 .classed("noShow", true);
-
 
         }
 
